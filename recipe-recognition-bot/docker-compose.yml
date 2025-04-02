@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-recipebot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-recipebot_password}
+      POSTGRES_DB: ${POSTGRES_DB:-recipebot}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - bot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U recipebot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - POSTGRES_URI=postgres://recipebot:recipebot_password@postgres:5432/recipebot
+      - LOG_LEVEL=info
+      - APP_ENVIRONMENT=production
+      - MAX_RECIPES_PER_USER=50
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
