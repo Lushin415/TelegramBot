@@ -24,10 +24,10 @@ INSERT INTO recipe_bot.users (
 `
 
 type CreateUserParams struct {
-	TelegramID       int64       `db:"telegram_id" json:"telegram_id"`
-	TelegramUsername pgtype.Text `db:"telegram_username" json:"telegram_username"`
-	FirstName        pgtype.Text `db:"first_name" json:"first_name"`
-	LastName         pgtype.Text `db:"last_name" json:"last_name"`
+	TelegramID       int64       `db:"telegram_id" json:"telegramId"`
+	TelegramUsername pgtype.Text `db:"telegram_username" json:"telegramUsername"`
+	FirstName        pgtype.Text `db:"first_name" json:"firstName"`
+	LastName         pgtype.Text `db:"last_name" json:"lastName"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (RecipeBotUser, error) {
@@ -57,7 +57,7 @@ WHERE id = $1 AND user_id = $2
 
 type DeleteRecipeParams struct {
 	ID     int32 `db:"id" json:"id"`
-	UserID int32 `db:"user_id" json:"user_id"`
+	UserID int32 `db:"user_id" json:"userId"`
 }
 
 func (q *Queries) DeleteRecipe(ctx context.Context, arg DeleteRecipeParams) error {
@@ -72,7 +72,7 @@ WHERE id = $1 AND user_id = $2 LIMIT 1
 
 type GetRecipeParams struct {
 	ID     int32 `db:"id" json:"id"`
-	UserID int32 `db:"user_id" json:"user_id"`
+	UserID int32 `db:"user_id" json:"userId"`
 }
 
 func (q *Queries) GetRecipe(ctx context.Context, arg GetRecipeParams) (RecipeBotRecipe, error) {
@@ -117,7 +117,7 @@ ORDER BY created_at DESC
 `
 
 type ListUserRecipesParams struct {
-	UserID int32 `db:"user_id" json:"user_id"`
+	UserID int32 `db:"user_id" json:"userId"`
 	Limit  int32 `db:"limit" json:"limit"`
 }
 
@@ -161,9 +161,9 @@ INSERT INTO recipe_bot.recipes (
 `
 
 type SaveRecipeParams struct {
-	UserID        int32  `db:"user_id" json:"user_id"`
-	RecipeTitle   string `db:"recipe_title" json:"recipe_title"`
-	RecipeContent string `db:"recipe_content" json:"recipe_content"`
+	UserID        int32  `db:"user_id" json:"userId"`
+	RecipeTitle   string `db:"recipe_title" json:"recipeTitle"`
+	RecipeContent string `db:"recipe_content" json:"recipeContent"`
 	Ingredients   []byte `db:"ingredients" json:"ingredients"`
 }
 
@@ -198,10 +198,10 @@ WHERE telegram_id = $1
 `
 
 type UpdateUserParams struct {
-	TelegramID       int64       `db:"telegram_id" json:"telegram_id"`
-	TelegramUsername pgtype.Text `db:"telegram_username" json:"telegram_username"`
-	FirstName        pgtype.Text `db:"first_name" json:"first_name"`
-	LastName         pgtype.Text `db:"last_name" json:"last_name"`
+	TelegramID       int64       `db:"telegram_id" json:"telegramId"`
+	TelegramUsername pgtype.Text `db:"telegram_username" json:"telegramUsername"`
+	FirstName        pgtype.Text `db:"first_name" json:"firstName"`
+	LastName         pgtype.Text `db:"last_name" json:"lastName"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (RecipeBotUser, error) {

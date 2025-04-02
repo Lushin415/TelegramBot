@@ -10,19 +10,19 @@ import (
 
 type RecipeBotRecipe struct {
 	ID            int32              `db:"id" json:"id"`
-	UserID        int32              `db:"user_id" json:"user_id"`
-	RecipeTitle   string             `db:"recipe_title" json:"recipe_title"`
-	RecipeContent string             `db:"recipe_content" json:"recipe_content"`
+	UserID        int32              `db:"user_id" json:"userId"`
+	RecipeTitle   string             `db:"recipe_title" json:"recipeTitle"`
+	RecipeContent string             `db:"recipe_content" json:"recipeContent"`
 	Ingredients   []byte             `db:"ingredients" json:"ingredients"`
-	CreatedAt     pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	CreatedAt     pgtype.Timestamptz `db:"created_at" json:"createdAt"`
 }
 
 type RecipeBotUser struct {
 	ID               int32              `db:"id" json:"id"`
-	TelegramID       int64              `db:"telegram_id" json:"telegram_id"`
-	TelegramUsername pgtype.Text        `db:"telegram_username" json:"telegram_username"`
-	FirstName        pgtype.Text        `db:"first_name" json:"first_name"`
-	LastName         pgtype.Text        `db:"last_name" json:"last_name"`
-	CreatedAt        pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt        pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	TelegramID       int64              `db:"telegram_id" json:"telegramId"`
+	TelegramUsername pgtype.Text        `db:"telegram_username" json:"telegramUsername"`
+	FirstName        pgtype.Text        `db:"first_name" json:"firstName"`
+	LastName         pgtype.Text        `db:"last_name" json:"lastName"`
+	CreatedAt        pgtype.Timestamptz `db:"created_at" json:"createdAt"`
+	UpdatedAt        pgtype.Timestamptz `db:"updated_at" json:"updatedAt"`
 }

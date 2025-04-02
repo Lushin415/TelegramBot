@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -19,7 +18,7 @@ import (
 
 func main() {
 	// Загружаем конфигурацию
-	cfg, err := config.LoadConfig(".")
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
@@ -27,71 +26,53 @@ func main() {
 	// Настраиваем логгер
 	var logger *zap.Logger
 	if cfg.AppEnvironment == "development" {
-		logger, err = zap.NewDevelopment()
+		logger, _ = zap.NewDevelopment()
 	} else {
-		logger, err = zap.NewProduction()
-	}
-	if err != nil {
-		log.Fatalf("Failed to initialize logger: %v", err)
+		logger, _ = zap.NewProduction()
 	}
 	defer logger.Sync()
 
-	logger.Info("Starting the Recipe Recognition Bot")
-
-	// Создаем контекст с возможностью отмены
+	// Контекст с отменой для изящного завершения
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Инициализируем соединение с базой данных
+	// Инициализация компонентов
 	dbManager, err := database.NewDBManager(ctx, cfg.PostgresURI, logger)
 	if err != nil {
-		logger.Fatal("Failed to initialize database connection", zap.Error(err))
+		logger.Fatal("Database connection failed", zap.Error(err))
 	}
 	defer dbManager.Close()
 
-	// Запускаем миграции
 	if err := dbManager.RunMigrations("migrations"); err != nil {
-		logger.Fatal("Failed to run migrations", zap.Error(err))
+		logger.Fatal("Migration failed", zap.Error(err))
 	}
 
-	// Инициализируем сервис распознавания продуктов
-	visionService := vision.NewOpenAIVision(cfg.OpenAIAPIKey, logger)
-
-	// Инициализируем генератор рецептов
-	recipeGenerator := recipes.NewRecipeGenerator(cfg.OpenAIAPIKey, logger)
-
-	// Создаем бота
-	bot, err := bot.NewBot(
+	// Запуск бота
+	b, err := bot.NewBot(
 		cfg.TelegramToken,
 		logger,
 		dbManager,
-		visionService,
-		recipeGenerator,
+		vision.NewOpenAIVision(cfg.OpenAIAPIKey, logger),
+		recipes.NewRecipeGenerator(cfg.OpenAIAPIKey, logger),
 		cfg.MaxRecipesPerUser,
 	)
 	if err != nil {
-		logger.Fatal("Failed to create bot", zap.Error(err))
+		logger.Fatal("Bot creation failed", zap.Error(err))
 	}
 
-	// Обрабатываем сигналы для изящного завершения
+	// Отслеживание сигналов для остановки
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// Запускаем бота в отдельной горутине
+	// Запуск бота в отдельной горутине
 	go func() {
-		if err := bot.Start(ctx); err != nil {
-			logger.Error("Bot stopped with error", zap.Error(err))
+		if err := b.Start(ctx); err != nil {
+			logger.Error("Bot error", zap.Error(err))
 			cancel()
 		}
 	}()
 
-	// Ожидаем сигнала для завершения
-	sig := <-sigChan
-	logger.Info("Received termination signal", zap.String("signal", sig.String()))
-
-	// Отменяем контекст и даем горутинам время на завершение
+	<-sigChan
+	logger.Info("Shutting down...")
 	cancel()
-	time.Sleep(3 * time.Second)
-
-	logger.Info("Bot stopped successfully")
 }

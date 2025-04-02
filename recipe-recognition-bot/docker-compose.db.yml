@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-recipebot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-recipebot_password}
+      POSTGRES_DB: ${POSTGRES_DB:-recipebot}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - bot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U recipebot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  bot-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

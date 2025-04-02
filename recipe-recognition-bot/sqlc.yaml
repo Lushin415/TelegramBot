@@ -14,3 +14,4 @@ sql:
         emit_prepared_queries: true
         emit_exact_table_names: false
         emit_empty_slices: true
+        json_tags_case_style: "camel"
