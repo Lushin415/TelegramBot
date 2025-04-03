@@ -19,10 +19,10 @@ type Config struct {
 
 // LoadConfig загружает конфигурацию из переменных окружения
 func LoadConfig() (*Config, error) {
-	// Загружаем переменные из файла app.env
-	err := godotenv.Load("app.env")
+	// Загружаем переменные из файла .env
+	err := godotenv.Load(".env")
 	if err != nil {
-		return nil, fmt.Errorf("error loading app.env file: %w", err)
+		return nil, fmt.Errorf("error loading .env file: %w", err)
 	}
 
 	maxRecipes := 50

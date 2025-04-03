@@ -1,6 +1,8 @@
 # Этап сборки
 FROM golang:1.23.4-alpine AS builder
 
+RUN apk add --no-cache git build-base gcc
+
 # Устанавливаем необходимые зависимости
 RUN apk add --no-cache git
 
@@ -13,14 +15,10 @@ COPY go.mod go.sum ./
 # Скачиваем все зависимости
 RUN go mod download
 
+COPY . /.env
+
 # Копируем исходный код
 COPY . .
-
-RUN pwd
-RUN ls -la
-RUN find . -name "app.env"
-RUN cat app.env || echo "File not found"
-RUN ls -la /app
 
 # Запускаем SQLC для генерации кода
 RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
@@ -47,19 +45,11 @@ COPY --from=builder /app/bot .
 # Копируем миграции базы данных
 COPY --from=builder /app/migrations ./migrations
 
-# Копируем файл конфигурации
-COPY --from=builder /app/.env .
-
-RUN cat app.env
-
 # Устанавливаем владельца файлов
 RUN chown -R appuser:appuser /app
 
 # Переключаемся на пользователя без привилегий
 USER appuser
-
-COPY app.env /app/app.env
-RUN cat /app/app.env
 
 # Запускаем приложение
 CMD ["./bot"]
